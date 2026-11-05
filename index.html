@@ -31,61 +31,57 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between font-mono-tech select-none">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between font-mono-tech select-none relative">
 
-  <!-- Flash Screen Layer -->
-  <div id="flash-layer" class="fixed inset-0 pointer-events-none z-50 opacity-0"></div>
+  <!-- Layer Flash (Diubah suai supaya tidak mengganggu sentuhan/klik) -->
+  <div id="flash-layer" class="fixed inset-0 pointer-events-none z-30 opacity-0"></div>
 
   <!-- Header / Status Bar -->
-  <header class="bg-black/60 backdrop-blur border-b border-yellow-600/30 p-4 flex justify-between items-center z-10">
+  <header class="bg-black/80 backdrop-blur border-b border-yellow-600/30 p-4 flex justify-between items-center z-20">
     <div class="flex items-center gap-2">
       <i class="fa-solid font-retro text-2xl text-yellow-500 fa-camera-retro"></i>
       <h1 class="text-xl font-bold tracking-widest text-yellow-400 font-retro">SNAP-HUB v1.0</h1>
     </div>
-    <button onclick="toggleSettingsModal()" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/50 px-3 py-1 rounded flex items-center gap-2 text-sm transition">
+    <button id="open-settings-btn" onclick="openSettingsModal()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs shadow-lg transition cursor-pointer">
       <i class="fa-solid fa-gear"></i> Tetapan GitHub
     </button>
   </header>
 
-  <!-- Main Camera & Audio Viewport -->
-  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center items-center gap-4">
+  <!-- Kamera Utama & Audio Viewport -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center items-center gap-4 z-10">
 
-    <!-- Retro Camera Body -->
+    <!-- Badan Kamera Retro -->
     <div class="w-full bg-yellow-500 border-4 border-yellow-600 rounded-3xl p-4 shadow-2xl relative text-gray-900">
       
-      <!-- Top Info Panel -->
+      <!-- Panel Atas Kamera -->
       <div class="flex justify-between items-center mb-3 px-2">
-        <!-- Film Roll Counter -->
         <div class="bg-black text-red-500 font-retro text-2xl px-3 py-0.5 rounded border border-gray-700 shadow-inner tracking-widest">
           SHOTS: <span id="shot-counter">00</span>
         </div>
         
-        <!-- Camera Controls & Switch -->
         <div class="flex gap-2">
-          <button id="switch-camera-btn" onclick="switchCamera()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition">
+          <button id="switch-camera-btn" onclick="switchCamera()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
-          <button id="toggle-flash-btn" onclick="toggleFlashSetting()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition">
+          <button id="toggle-flash-btn" onclick="toggleFlashSetting()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
             <i id="flash-icon" class="fa-solid fa-bolt-slash"></i>
           </button>
         </div>
       </div>
 
-      <!-- Viewfinder / Camera Screen -->
+      <!-- Skrin Viewfinder Kamera -->
       <div class="relative aspect-[4/3] bg-black rounded-xl overflow-hidden border-4 border-gray-800 shadow-inner group">
         <video id="webcam" autoplay playsinline class="w-full h-full object-cover transform scale-x-[-1]"></video>
         <canvas id="photo-canvas" class="hidden"></canvas>
         <div class="absolute inset-0 viewfinder-overlay pointer-events-none"></div>
         <div class="absolute inset-0 retro-grain pointer-events-none opacity-40"></div>
         
-        <!-- Viewfinder Frame Crosshair -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
           <div class="w-12 h-12 border border-white/60 rounded-full flex items-center justify-center">
             <div class="w-1 h-1 bg-white rounded-full"></div>
           </div>
         </div>
 
-        <!-- Camera Status Overlay -->
         <div id="camera-error" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center hidden">
           <i class="fa-solid fa-triangle-exclamation text-red-500 text-3xl mb-2"></i>
           <p class="text-xs text-gray-300 mb-3" id="camera-error-msg">Gagal memuatkan kamera.</p>
@@ -93,7 +89,7 @@
         </div>
       </div>
 
-      <!-- Filter Selection -->
+      <!-- Pilihan Penapis (Filter) -->
       <div class="mt-3 grid grid-cols-4 gap-1 text-xs">
         <button onclick="setFilter('none')" class="filter-btn bg-gray-800 text-white py-1 rounded border border-gray-700 font-bold active-filter" data-filter="none">NORMAL</button>
         <button onclick="setFilter('warm')" class="filter-btn bg-yellow-900/40 text-yellow-300 py-1 rounded border border-gray-700" data-filter="warm">WARM</button>
@@ -101,9 +97,9 @@
         <button onclick="setFilter('vintage')" class="filter-btn bg-amber-900/40 text-amber-300 py-1 rounded border border-gray-700" data-filter="vintage">VINTAGE</button>
       </div>
 
-      <!-- Main Shutter Button -->
+      <!-- Butang Shutter Utama -->
       <div class="mt-4 flex justify-center">
-        <button onclick="takePicture()" class="w-20 h-20 bg-red-600 hover:bg-red-500 active:scale-95 border-4 border-white rounded-full shadow-lg flex items-center justify-center transition">
+        <button onclick="takePicture()" class="w-20 h-20 bg-red-600 hover:bg-red-500 active:scale-95 border-4 border-white rounded-full shadow-lg flex items-center justify-center transition cursor-pointer">
           <div class="w-14 h-14 border-2 border-red-800 rounded-full flex items-center justify-center">
             <i class="fa-solid fa-camera text-white text-xl"></i>
           </div>
@@ -111,7 +107,7 @@
       </div>
     </div>
 
-    <!-- Voice Note Recorder Module -->
+    <!-- Modul Perakam Suara -->
     <div class="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
       <div class="flex justify-between items-center">
         <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
@@ -121,77 +117,78 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <button id="record-btn" onclick="toggleRecording()" class="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/40 py-2 rounded-xl flex items-center justify-center gap-2 transition font-bold text-sm">
-          <i id="record-icon" class="fa-solid fa-circle text-xs text-red-500"></i> <span id="record-label">Rakram Suara</span>
+        <button id="record-btn" onclick="toggleRecording()" class="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/40 py-2 rounded-xl flex items-center justify-center gap-2 transition font-bold text-sm cursor-pointer">
+          <i id="record-icon" class="fa-solid fa-circle text-xs text-red-500"></i> <span id="record-label">Rakam Suara</span>
         </button>
       </div>
 
-      <!-- Preview Player for Voice Note -->
       <div id="audio-preview-container" class="hidden flex items-center gap-2 bg-gray-900 p-2 rounded-lg border border-gray-700">
         <audio id="audio-player" controls class="w-full h-8"></audio>
-        <button onclick="uploadVoiceNote()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-500 shrink-0">
+        <button onclick="uploadVoiceNote()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-500 shrink-0 cursor-pointer">
           <i class="fa-solid fa-cloud-arrow-up"></i> Hantar
         </button>
       </div>
     </div>
 
-    <!-- Upload Log / Status Window -->
+    <!-- Kotak Log Muat Naik -->
     <div class="w-full bg-black/80 border border-gray-800 rounded-xl p-3 text-xs font-mono text-gray-400 h-28 overflow-y-auto" id="upload-log">
-      <p class="text-gray-500">[SYSTEM] Sistem sedia. Sila masukkan maklumat GitHub di Tetapan.</p>
+      <p class="text-gray-500">[SYSTEM] Sedia. Sila masukkan maklumat GitHub di Tetapan.</p>
     </div>
 
   </main>
 
-  <!-- GitHub Settings Modal -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-sm w-full p-5 text-gray-200">
+  <!-- GitHub Settings Modal (Menggunakan z-50 untuk keutamaan tertinggi) -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-gray-800 border border-yellow-500/50 rounded-2xl max-w-sm w-full p-5 text-gray-200 shadow-2xl relative">
       <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-        <h3 class="font-bold text-yellow-400 flex items-center gap-2">
-          <i class="fa-brands fa-github"></i> Tetapan GitHub Repositori
+        <h3 class="font-bold text-yellow-400 flex items-center gap-2 text-base">
+          <i class="fa-brands fa-github"></i> Tetapan GitHub
         </h3>
-        <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white p-1 text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block mb-1 text-gray-400">GitHub Personal Access Token (PAT)</label>
-          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <label class="block mb-1 text-gray-300 font-bold">1. GitHub Personal Access Token (PAT)</label>
+          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
-          <label class="block mb-1 text-gray-400">GitHub Username / Owner</label>
-          <input type="text" id="gh-owner" placeholder="Khairil-Anwar-Rustam" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <label class="block mb-1 text-gray-300 font-bold">2. GitHub Username</label>
+          <input type="text" id="gh-owner" placeholder="Khairil-Anwar-Rustam" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
-          <label class="block mb-1 text-gray-400">Repository Name</label>
-          <input type="text" id="gh-repo" placeholder="Snap-hub" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <label class="block mb-1 text-gray-300 font-bold">3. Repository Name</label>
+          <input type="text" id="gh-repo" placeholder="Snap-hub" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
-          <label class="block mb-1 text-gray-400">Branch Name</label>
-          <input type="text" id="gh-branch" placeholder="main" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <label class="block mb-1 text-gray-300 font-bold">4. Branch Name</label>
+          <input type="text" id="gh-branch" placeholder="main" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
       </div>
 
-      <div class="mt-5 flex gap-2">
-        <button onclick="saveSettings()" class="flex-1 bg-yellow-500 text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Simpan Tetapan</button>
+      <div id="settings-alert" class="mt-3 text-xs hidden"></div>
+
+      <div class="mt-4 flex gap-2">
+        <button onclick="saveSettings()" class="w-full bg-yellow-500 text-black font-bold py-2.5 rounded-lg hover:bg-yellow-400 transition cursor-pointer text-sm shadow">
+          <i class="fa-solid fa-floppy-disk"></i> Simpan Tetapan
+        </button>
       </div>
     </div>
   </div>
 
   <script>
     let currentStream = null;
-    let facingMode = 'user'; // 'user' atau 'environment'
+    let facingMode = 'user';
     let flashEnabled = false;
     let selectedFilter = 'none';
     let shotCount = 0;
 
-    // Audio Recorder variables
     let mediaRecorder;
     let audioChunks = [];
     let audioBlob = null;
     let recordTimerInterval;
     let secondsRecorded = 0;
 
-    // Load Settings on Start
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
       initCamera();
@@ -201,13 +198,65 @@
       const logContainer = document.getElementById('upload-log');
       const p = document.createElement('p');
       const time = new Date().toLocaleTimeString();
-      p.className = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-gray-400';
+      p.className = type === 'error' ? 'text-red-400 font-bold' : type === 'success' ? 'text-green-400 font-bold' : 'text-gray-400';
       p.innerText = `[${time}] ${msg}`;
       logContainer.appendChild(p);
       logContainer.scrollTop = logContainer.scrollHeight;
     }
 
-    // Camera Management
+    // Modal Visibility Functions
+    function openSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.remove('hidden');
+      loadSettings();
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.add('hidden');
+    }
+
+    // Save & Load Local Storage Settings
+    function saveSettings() {
+      const token = document.getElementById('gh-token').value.trim();
+      const owner = document.getElementById('gh-owner').value.trim();
+      const repo = document.getElementById('gh-repo').value.trim();
+      const branch = document.getElementById('gh-branch').value.trim() || 'main';
+
+      const alertDiv = document.getElementById('settings-alert');
+
+      if (!token || !owner || !repo) {
+        alertDiv.className = "mt-3 text-xs text-red-400 bg-red-950/60 p-2 rounded border border-red-800";
+        alertDiv.innerText = "Sila isi Token, Username, dan Nama Repository!";
+        alertDiv.classList.remove('hidden');
+        return;
+      }
+
+      localStorage.setItem('gh_token', token);
+      localStorage.setItem('gh_owner', owner);
+      localStorage.setItem('gh_repo', repo);
+      localStorage.setItem('gh_branch', branch);
+
+      alertDiv.className = "mt-3 text-xs text-green-400 bg-green-950/60 p-2 rounded border border-green-800";
+      alertDiv.innerText = "Tetapan berjaya disimpan!";
+      alertDiv.classList.remove('hidden');
+
+      logMessage("Tetapan GitHub dikemaskini.", "success");
+
+      setTimeout(() => {
+        alertDiv.classList.add('hidden');
+        closeSettingsModal();
+      }, 1000);
+    }
+
+    function loadSettings() {
+      if (localStorage.getItem('gh_token')) document.getElementById('gh-token').value = localStorage.getItem('gh_token');
+      if (localStorage.getItem('gh_owner')) document.getElementById('gh-owner').value = localStorage.getItem('gh_owner');
+      if (localStorage.getItem('gh_repo')) document.getElementById('gh-repo').value = localStorage.getItem('gh_repo');
+      if (localStorage.getItem('gh_branch')) document.getElementById('gh-branch').value = localStorage.getItem('gh_branch');
+    }
+
+    // Camera Access
     async function initCamera() {
       const video = document.getElementById('webcam');
       const errorDiv = document.getElementById('camera-error');
@@ -227,21 +276,15 @@
         try {
           currentStream = await navigator.mediaDevices.getUserMedia(constraint);
           video.srcObject = currentStream;
-          
-          // Mirror view logic
-          if (facingMode === 'user') {
-            video.style.transform = 'scaleX(-1)';
-          } else {
-            video.style.transform = 'scaleX(1)';
-          }
-          logMessage(`Kamera diaktifkan (${facingMode})`);
+          video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)';
+          logMessage(`Kamera aktif (${facingMode})`);
           return;
         } catch (err) {
-          console.warn("Cuba tetapan kamera seterusnya...", err);
+          console.warn("Mencuba pilihan kamera lain...", err);
         }
       }
 
-      document.getElementById('camera-error-msg').innerText = "Kamera tidak dapat dibuka. Sila semak kebenaran browser.";
+      document.getElementById('camera-error-msg').innerText = "Gagal mengakses kamera peranti.";
       errorDiv.classList.remove('hidden');
     }
 
@@ -267,7 +310,6 @@
       });
     }
 
-    // Capture Photo
     function takePicture() {
       const video = document.getElementById('webcam');
       const canvas = document.getElementById('photo-canvas');
@@ -275,7 +317,6 @@
 
       if (!video.srcObject) return;
 
-      // Visual Flash Effect
       if (flashEnabled) {
         const flash = document.getElementById('flash-layer');
         flash.classList.add('flash-effect');
@@ -285,7 +326,6 @@
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
 
-      // Draw image
       context.save();
       if (facingMode === 'user') {
         context.translate(canvas.width, 0);
@@ -294,14 +334,11 @@
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       context.restore();
 
-      // Apply Filters
       applyCanvasFilter(context, canvas.width, canvas.height, selectedFilter);
 
-      // Increment Counter
       shotCount++;
       document.getElementById('shot-counter').innerText = String(shotCount).padStart(2, '0');
 
-      // Convert to Base64 & Upload
       const imageDataBase64 = canvas.toDataURL('image/png').split(',')[1];
       const filename = `photos/PHOTO_${getTimestamp()}.png`;
 
@@ -331,7 +368,7 @@
       ctx.putImageData(imageData, 0, 0);
     }
 
-    // Audio Recording
+    // Audio Recorder
     async function toggleRecording() {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         stopRecording();
@@ -374,11 +411,11 @@
     }
 
     function stopRecording() {
-      mediaRecorder.stop();
+      if (mediaRecorder) mediaRecorder.stop();
       clearInterval(recordTimerInterval);
-      document.getElementById('record-label').innerText = "Rakram Suara";
+      document.getElementById('record-label').innerText = "Rakam Suara";
       document.getElementById('record-icon').className = "fa-solid fa-circle text-xs text-red-500";
-      logMessage("Merakam selesai. Sedia untuk dihantar.");
+      logMessage("Rakaman selesai. Sedia untuk dihantar.");
     }
 
     function uploadVoiceNote() {
@@ -392,7 +429,7 @@
       };
     }
 
-    // GitHub API Core Function
+    // GitHub API Core
     async function uploadToGitHub(path, base64Content, commitMsg) {
       const token = localStorage.getItem('gh_token');
       const owner = localStorage.getItem('gh_owner');
@@ -401,64 +438,9 @@
 
       if (!token || !owner || !repo) {
         logMessage("RALAT: Tetapan GitHub belum lengkap!", "error");
-        toggleSettingsModal();
+        openSettingsModal();
         return;
       }
 
-      logMessage(`Memuat naik ke GitHub: ${path}...`);
-
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-
-      try {
-        const response = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github+json'
-          },
-          body: JSON.stringify({
-            message: commitMsg,
-            content: base64Content,
-            branch: branch
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          logMessage(`BERJAYA! Fail disimpan: ${path}`, "success");
-        } else {
-          logMessage(`RALAT GITHUB: ${data.message}`, "error");
-        }
-      } catch (err) {
-        logMessage(`RALAT RANGKAIAN: ${err.message}`, "error");
-      }
-    }
-
-    // Helpers & Settings
-    function toggleSettingsModal() {
-      const modal = document.getElementById('settings-modal');
-      modal.classList.toggle('hidden');
-    }
-
-    function saveSettings() {
-      localStorage.setItem('gh_token', document.getElementById('gh-token').value.trim());
-      localStorage.setItem('gh_owner', document.getElementById('gh-owner').value.trim());
-      localStorage.setItem('gh_repo', document.getElementById('gh-repo').value.trim());
-      localStorage.setItem('gh_branch', document.getElementById('gh-branch').value.trim() || 'main');
-      
-      logMessage("Tetapan GitHub disimpan.", "success");
-      toggleSettingsModal();
-    }
-
-    function loadSettings() {
-      if (localStorage.getItem('gh_token')) document.getElementById('gh-token').value = localStorage.getItem('gh_token');
-      if (localStorage.getItem('gh_owner')) document.getElementById('gh-owner').value = localStorage.getItem('gh_owner');
-      if (localStorage.getItem('gh_repo')) document.getElementById('gh-repo').value = localStorage.getItem('gh_repo');
-      if (localStorage.getItem('gh_branch')) document.getElementById('gh-branch').value = localStorage.getItem('gh_branch');
-    }
-
-    function getTimestamp() {
-      const now = new Date();
-      r
+      logMessage(`Memuat naik: ${path}...`);
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${p
