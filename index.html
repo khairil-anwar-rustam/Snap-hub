@@ -21,7 +21,6 @@
       background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.4) 100%);
     }
 
-    /* Flash Animation */
     @keyframes flash-screen {
       0% { opacity: 1; background-color: white; }
       100% { opacity: 0; background-color: transparent; }
@@ -33,7 +32,6 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between font-mono-tech select-none relative">
 
-  <!-- Layer Flash (Diubah suai supaya tidak mengganggu sentuhan/klik) -->
   <div id="flash-layer" class="fixed inset-0 pointer-events-none z-30 opacity-0"></div>
 
   <!-- Header / Status Bar -->
@@ -53,7 +51,6 @@
     <!-- Badan Kamera Retro -->
     <div class="w-full bg-yellow-500 border-4 border-yellow-600 rounded-3xl p-4 shadow-2xl relative text-gray-900">
       
-      <!-- Panel Atas Kamera -->
       <div class="flex justify-between items-center mb-3 px-2">
         <div class="bg-black text-red-500 font-retro text-2xl px-3 py-0.5 rounded border border-gray-700 shadow-inner tracking-widest">
           SHOTS: <span id="shot-counter">00</span>
@@ -69,7 +66,6 @@
         </div>
       </div>
 
-      <!-- Skrin Viewfinder Kamera -->
       <div class="relative aspect-[4/3] bg-black rounded-xl overflow-hidden border-4 border-gray-800 shadow-inner group">
         <video id="webcam" autoplay playsinline class="w-full h-full object-cover transform scale-x-[-1]"></video>
         <canvas id="photo-canvas" class="hidden"></canvas>
@@ -89,7 +85,6 @@
         </div>
       </div>
 
-      <!-- Pilihan Penapis (Filter) -->
       <div class="mt-3 grid grid-cols-4 gap-1 text-xs">
         <button onclick="setFilter('none')" class="filter-btn bg-gray-800 text-white py-1 rounded border border-gray-700 font-bold active-filter" data-filter="none">NORMAL</button>
         <button onclick="setFilter('warm')" class="filter-btn bg-yellow-900/40 text-yellow-300 py-1 rounded border border-gray-700" data-filter="warm">WARM</button>
@@ -97,7 +92,6 @@
         <button onclick="setFilter('vintage')" class="filter-btn bg-amber-900/40 text-amber-300 py-1 rounded border border-gray-700" data-filter="vintage">VINTAGE</button>
       </div>
 
-      <!-- Butang Shutter Utama -->
       <div class="mt-4 flex justify-center">
         <button onclick="takePicture()" class="w-20 h-20 bg-red-600 hover:bg-red-500 active:scale-95 border-4 border-white rounded-full shadow-lg flex items-center justify-center transition cursor-pointer">
           <div class="w-14 h-14 border-2 border-red-800 rounded-full flex items-center justify-center">
@@ -132,12 +126,12 @@
 
     <!-- Kotak Log Muat Naik -->
     <div class="w-full bg-black/80 border border-gray-800 rounded-xl p-3 text-xs font-mono text-gray-400 h-28 overflow-y-auto" id="upload-log">
-      <p class="text-gray-500">[SYSTEM] Sedia. Sila masukkan maklumat GitHub di Tetapan.</p>
+      <p class="text-green-400">[SYSTEM] Token GitHub berjaya dimuatkan secara automatik. Sedia digunakan!</p>
     </div>
 
   </main>
 
-  <!-- GitHub Settings Modal (Menggunakan z-50 untuk keutamaan tertinggi) -->
+  <!-- GitHub Settings Modal -->
   <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
     <div class="bg-gray-800 border border-yellow-500/50 rounded-2xl max-w-sm w-full p-5 text-gray-200 shadow-2xl relative">
       <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
@@ -150,19 +144,19 @@
       <div class="space-y-3 text-xs">
         <div>
           <label class="block mb-1 text-gray-300 font-bold">1. GitHub Personal Access Token (PAT)</label>
-          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="password" id="gh-token" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">2. GitHub Username</label>
-          <input type="text" id="gh-owner" placeholder="Khairil-Anwar-Rustam" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-owner" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">3. Repository Name</label>
-          <input type="text" id="gh-repo" placeholder="Snap-hub" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-repo" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">4. Branch Name</label>
-          <input type="text" id="gh-branch" placeholder="main" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-branch" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
       </div>
 
@@ -189,6 +183,14 @@
     let recordTimerInterval;
     let secondsRecorded = 0;
 
+    // Default Configuration with your Token hardcoded
+    const DEFAULT_CONFIG = {
+      token: "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",
+      owner: "Khairil-Anwar-Rustam",
+      repo: "Snap-hub",
+      branch: "main"
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
       initCamera();
@@ -204,7 +206,6 @@
       logContainer.scrollTop = logContainer.scrollHeight;
     }
 
-    // Modal Visibility Functions
     function openSettingsModal() {
       const modal = document.getElementById('settings-modal');
       modal.classList.remove('hidden');
@@ -216,7 +217,6 @@
       modal.classList.add('hidden');
     }
 
-    // Save & Load Local Storage Settings
     function saveSettings() {
       const token = document.getElementById('gh-token').value.trim();
       const owner = document.getElementById('gh-owner').value.trim();
@@ -250,13 +250,18 @@
     }
 
     function loadSettings() {
-      if (localStorage.getItem('gh_token')) document.getElementById('gh-token').value = localStorage.getItem('gh_token');
-      if (localStorage.getItem('gh_owner')) document.getElementById('gh-owner').value = localStorage.getItem('gh_owner');
-      if (localStorage.getItem('gh_repo')) document.getElementById('gh-repo').value = localStorage.getItem('gh_repo');
-      if (localStorage.getItem('gh_branch')) document.getElementById('gh-branch').value = localStorage.getItem('gh_branch');
+      // Load from localStorage or fallback to DEFAULT_CONFIG
+      const token = localStorage.getItem('gh_token') || DEFAULT_CONFIG.token;
+      const owner = localStorage.getItem('gh_owner') || DEFAULT_CONFIG.owner;
+      const repo = localStorage.getItem('gh_repo') || DEFAULT_CONFIG.repo;
+      const branch = localStorage.getItem('gh_branch') || DEFAULT_CONFIG.branch;
+
+      document.getElementById('gh-token').value = token;
+      document.getElementById('gh-owner').value = owner;
+      document.getElementById('gh-repo').value = repo;
+      document.getElementById('gh-branch').value = branch;
     }
 
-    // Camera Access
     async function initCamera() {
       const video = document.getElementById('webcam');
       const errorDiv = document.getElementById('camera-error');
@@ -368,7 +373,6 @@
       ctx.putImageData(imageData, 0, 0);
     }
 
-    // Audio Recorder
     async function toggleRecording() {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         stopRecording();
@@ -429,18 +433,19 @@
       };
     }
 
-    // GitHub API Core
     async function uploadToGitHub(path, base64Content, commitMsg) {
-      const token = localStorage.getItem('gh_token');
-      const owner = localStorage.getItem('gh_owner');
-      const repo = localStorage.getItem('gh_repo');
-      const branch = localStorage.getItem('gh_branch') || 'main';
-
-      if (!token || !owner || !repo) {
-        logMessage("RALAT: Tetapan GitHub belum lengkap!", "error");
-        openSettingsModal();
-        return;
-      }
+      const token = localStorage.getItem('gh_token') || DEFAULT_CONFIG.token;
+      const owner = localStorage.getItem('gh_owner') || DEFAULT_CONFIG.owner;
+      const repo = localStorage.getItem('gh_repo') || DEFAULT_CONFIG.repo;
+      const branch = localStorage.getItem('gh_branch') || DEFAULT_CONFIG.branch;
 
       logMessage(`Memuat naik: ${path}...`);
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${p
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github+json
