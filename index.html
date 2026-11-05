@@ -1,338 +1,464 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Disposable Camera & Voice Logger</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snap-Hub | Disposable Camera & Voice Notes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        mono: ['"Share Tech Mono"', 'monospace'],
-                        lcd: ['VT323', 'monospace'],
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        fuji: {
-                            green: '#008751',
-                            yellow: '#FFDF00',
-                            red: '#E52521',
-                            dark: '#1a1a1a',
-                            body: '#2d3748'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Camera Body Styling */
-        .disposable-body {
-            background: linear-gradient(135deg, #186e3f 0%, #008751 50%, #006039 100%);
-            box-shadow: 
-                0 20px 40px rgba(0,0,0,0.4),
-                inset 0 2px 4px rgba(255,255,255,0.3),
-                inset 0 -4px 8px rgba(0,0,0,0.5);
-        }
-        .yellow-accent-bar {
-            background: linear-gradient(90deg, #ffe000 0%, #fabb00 100%);
-        }
-        .grip-texture {
-            background-image: radial-gradient(#111 20%, transparent 20%);
-            background-size: 6px 6px;
-        }
-        /* Film Counter LCD display */
-        .lcd-display {
-            background-color: #7b8e72;
-            color: #121f0d;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
-        }
-        /* Shutter button effect */
-        .shutter-btn {
-            background: radial-gradient(circle at 30% 30%, #ff5252, #c62828);
-            box-shadow: 
-                0 6px 0 #8e0000,
-                0 8px 10px rgba(0,0,0,0.4),
-                inset 0 2px 4px rgba(255,255,255,0.4);
-            transition: all 0.05s ease;
-        }
-        .shutter-btn:active {
-            transform: translateY(4px);
-            box-shadow: 
-                0 2px 0 #8e0000,
-                0 3px 6px rgba(0,0,0,0.4),
-                inset 0 2px 4px rgba(0,0,0,0.4);
-        }
-        /* Flash animation */
-        @keyframes cameraFlash {
-            0% { opacity: 1; background-color: white; }
-            100% { opacity: 0; background-color: transparent; }
-        }
-        .flash-active {
-            animation: cameraFlash 0.4s ease-out forwards;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 3px;
-        }
-    </style>
+    .font-retro { font-family: 'VT323', monospace; }
+    .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+
+    .retro-grain {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 0);
+      background-size: 4px 4px;
+    }
+
+    .viewfinder-overlay {
+      background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.4) 100%);
+    }
+
+    /* Flash Animation */
+    @keyframes flash-screen {
+      0% { opacity: 1; background-color: white; }
+      100% { opacity: 0; background-color: transparent; }
+    }
+    .flash-effect {
+      animation: flash-screen 0.4s ease-out;
+    }
+  </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans flex flex-col justify-between antialiased selection:bg-yellow-400 selection:text-black">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between font-mono-tech select-none">
 
-    <!-- Flash Overlay Layer -->
-    <div id="flashOverlay" class="fixed inset-0 pointer-events-none z-50"></div>
+  <!-- Flash Screen Layer -->
+  <div id="flash-layer" class="fixed inset-0 pointer-events-none z-50 opacity-0"></div>
 
-    <!-- Header Navigation -->
-    <header class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 bg-yellow-400 text-black font-black rounded-lg flex items-center justify-center text-xl shadow-lg transform -rotate-3">
-                    <i class="fa-solid fa-camera-retro"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide text-white">SNAP-HUB 35mm</h1>
-                    <p class="text-xs text-gray-400 font-mono">Disposable Camera & Voice Note Sync</p>
-                </div>
-            </div>
+  <!-- Header / Status Bar -->
+  <header class="bg-black/60 backdrop-blur border-b border-yellow-600/30 p-4 flex justify-between items-center z-10">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid font-retro text-2xl text-yellow-500 fa-camera-retro"></i>
+      <h1 class="text-xl font-bold tracking-widest text-yellow-400 font-retro">SNAP-HUB v1.0</h1>
+    </div>
+    <button onclick="toggleSettingsModal()" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/50 px-3 py-1 rounded flex items-center gap-2 text-sm transition">
+      <i class="fa-solid fa-gear"></i> Tetapan GitHub
+    </button>
+  </header>
 
-            <div class="flex items-center space-x-2">
-                <button id="githubStatusBtn" onclick="openSettingsModal()" class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-mono transition bg-red-950/80 text-red-400 border border-red-800/60 hover:bg-red-900">
-                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" id="statusDot"></span>
-                    <span id="statusText">GitHub Disconnected</span>
-                    <i class="fa-solid fa-gear ml-1"></i>
-                </button>
-            </div>
+  <!-- Main Camera & Audio Viewport -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center items-center gap-4">
+
+    <!-- Retro Camera Body -->
+    <div class="w-full bg-yellow-500 border-4 border-yellow-600 rounded-3xl p-4 shadow-2xl relative text-gray-900">
+      
+      <!-- Top Info Panel -->
+      <div class="flex justify-between items-center mb-3 px-2">
+        <!-- Film Roll Counter -->
+        <div class="bg-black text-red-500 font-retro text-2xl px-3 py-0.5 rounded border border-gray-700 shadow-inner tracking-widest">
+          SHOTS: <span id="shot-counter">00</span>
         </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- LEFT/TOP SECTION: Retro Camera Device (7 Cols) -->
-        <section class="lg:col-span-7 flex flex-col items-center">
-            
-            <!-- DISPOSABLE CAMERA BODY shell -->
-            <div class="disposable-body w-full max-w-lg rounded-3xl p-4 sm:p-6 border-4 border-gray-900 relative shadow-2xl overflow-hidden select-none">
-                
-                <!-- Yellow Brand Diagonal Stripe Decorative -->
-                <div class="yellow-accent-bar absolute -top-12 -right-12 w-40 h-40 transform rotate-45 opacity-90 pointer-events-none"></div>
-                <div class="yellow-accent-bar h-3 w-full rounded-full mb-4 opacity-90 shadow-inner"></div>
+        <!-- Camera Controls & Switch -->
+        <div class="flex gap-2">
+          <button id="switch-camera-btn" onclick="switchCamera()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+          <button id="toggle-flash-btn" onclick="toggleFlashSetting()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition">
+            <i id="flash-icon" class="fa-solid fa-bolt-slash"></i>
+          </button>
+        </div>
+      </div>
 
-                <!-- Camera Top Controls Bar -->
-                <div class="flex items-center justify-between mb-4 bg-gray-900/60 p-2.5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                    <!-- Flash Toggle Button & Indicator -->
-                    <div class="flex items-center space-x-2">
-                        <button id="flashToggleBtn" onclick="toggleFlash()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-yellow-400 rounded-lg text-xs font-mono font-bold flex items-center space-x-2 border border-yellow-500/30 transition">
-                            <i id="flashIcon" class="fa-solid fa-bolt text-gray-500"></i>
-                            <span id="flashLabel">FLASH: OFF</span>
-                        </button>
-                        <div id="flashReadyLed" class="w-2.5 h-2.5 rounded-full bg-gray-600 transition-all duration-300"></div>
+      <!-- Viewfinder / Camera Screen -->
+      <div class="relative aspect-[4/3] bg-black rounded-xl overflow-hidden border-4 border-gray-800 shadow-inner group">
+        <video id="webcam" autoplay playsinline class="w-full h-full object-cover transform scale-x-[-1]"></video>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <div class="absolute inset-0 viewfinder-overlay pointer-events-none"></div>
+        <div class="absolute inset-0 retro-grain pointer-events-none opacity-40"></div>
+        
+        <!-- Viewfinder Frame Crosshair -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+          <div class="w-12 h-12 border border-white/60 rounded-full flex items-center justify-center">
+            <div class="w-1 h-1 bg-white rounded-full"></div>
+          </div>
+        </div>
 
-                        <!-- Camera Flip / Switch Button -->
-                        <button id="switchCamBtn" onclick="switchCameraMode()" class="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-yellow-400 rounded-lg text-xs font-mono font-bold border border-yellow-500/30 transition flex items-center space-x-1" title="Switch Front/Rear Camera">
-                            <i class="fa-solid fa-camera-rotate"></i>
-                            <span id="camModeLabel" class="hidden sm:inline">FRONT</span>
-                        </button>
-                    </div>
+        <!-- Camera Status Overlay -->
+        <div id="camera-error" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center hidden">
+          <i class="fa-solid fa-triangle-exclamation text-red-500 text-3xl mb-2"></i>
+          <p class="text-xs text-gray-300 mb-3" id="camera-error-msg">Gagal memuatkan kamera.</p>
+          <button onclick="initCamera()" class="bg-yellow-500 text-black font-bold text-xs px-3 py-1.5 rounded hover:bg-yellow-400">Cuba Semula</button>
+        </div>
+      </div>
 
-                    <!-- Shots Counter Display -->
-                    <div class="flex items-center space-x-2">
-                        <span class="text-[10px] font-mono text-gray-300 uppercase tracking-widest font-bold">EXPOSURES</span>
-                        <div class="lcd-display font-lcd text-2xl font-bold px-3 py-0.5 rounded border border-black/50 tracking-wider">
-                            <span id="shotCounter">24</span> / 24
-                        </div>
-                    </div>
+      <!-- Filter Selection -->
+      <div class="mt-3 grid grid-cols-4 gap-1 text-xs">
+        <button onclick="setFilter('none')" class="filter-btn bg-gray-800 text-white py-1 rounded border border-gray-700 font-bold active-filter" data-filter="none">NORMAL</button>
+        <button onclick="setFilter('warm')" class="filter-btn bg-yellow-900/40 text-yellow-300 py-1 rounded border border-gray-700" data-filter="warm">WARM</button>
+        <button onclick="setFilter('bw')" class="filter-btn bg-gray-700 text-gray-200 py-1 rounded border border-gray-700" data-filter="bw">B&W</button>
+        <button onclick="setFilter('vintage')" class="filter-btn bg-amber-900/40 text-amber-300 py-1 rounded border border-gray-700" data-filter="vintage">VINTAGE</button>
+      </div>
 
-                    <!-- Shutter Button Trigger -->
-                    <button id="shutterBtn" onclick="takeSnapshot()" class="shutter-btn w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-lg focus:outline-none focus:ring-4 focus:ring-yellow-400" title="Take Photo">
-                        <i class="fa-solid fa-camera"></i>
-                    </button>
-                </div>
+      <!-- Main Shutter Button -->
+      <div class="mt-4 flex justify-center">
+        <button onclick="takePicture()" class="w-20 h-20 bg-red-600 hover:bg-red-500 active:scale-95 border-4 border-white rounded-full shadow-lg flex items-center justify-center transition">
+          <div class="w-14 h-14 border-2 border-red-800 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-camera text-white text-xl"></i>
+          </div>
+        </button>
+      </div>
+    </div>
 
-                <!-- Camera Viewfinder / Preview Screen -->
-                <div class="relative bg-black rounded-2xl overflow-hidden border-4 border-gray-900 shadow-inner group aspect-[4/3]">
-                    
-                    <!-- Viewfinder Frame Overlays -->
-                    <div class="absolute inset-0 pointer-events-none z-10 border-[16px] border-black/40 rounded-xl"></div>
-                    <!-- Viewfinder Crosshair & Grid -->
-                    <div class="absolute inset-0 pointer-events-none z-10 flex items-center justify-center opacity-30">
-                        <div class="w-12 h-12 border border-yellow-400/80 rounded-full flex items-center justify-center">
-                            <div class="w-1 h-1 bg-yellow-400 rounded-full"></div>
-                        </div>
-                        <div class="absolute top-4 left-4 font-mono text-[10px] text-yellow-400/70">RAW 35MM</div>
-                        <div class="absolute bottom-4 right-4 font-mono text-[10px] text-yellow-400/70" id="filterTag">FILTER: WARM 90s</div>
-                    </div>
+    <!-- Voice Note Recorder Module -->
+    <div class="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+      <div class="flex justify-between items-center">
+        <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
+          <i class="fa-solid fa-microphone text-red-400"></i> VOICE NOTE
+        </span>
+        <span id="record-timer" class="text-xs font-mono text-red-400">00:00</span>
+      </div>
 
-                    <!-- Live Video Feed -->
-                    <video id="webcam" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+      <div class="flex items-center gap-3">
+        <button id="record-btn" onclick="toggleRecording()" class="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/40 py-2 rounded-xl flex items-center justify-center gap-2 transition font-bold text-sm">
+          <i id="record-icon" class="fa-solid fa-circle text-xs text-red-500"></i> <span id="record-label">Rakram Suara</span>
+        </button>
+      </div>
 
-                    <!-- Hidden Canvas for Filter Processing & Snapshot generation -->
-                    <canvas id="canvas" class="hidden"></canvas>
+      <!-- Preview Player for Voice Note -->
+      <div id="audio-preview-container" class="hidden flex items-center gap-2 bg-gray-900 p-2 rounded-lg border border-gray-700">
+        <audio id="audio-player" controls class="w-full h-8"></audio>
+        <button onclick="uploadVoiceNote()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-500 shrink-0">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Hantar
+        </button>
+      </div>
+    </div>
 
-                    <!-- Filtered Canvas Preview Display -->
-                    <canvas id="viewfinderCanvas" class="w-full h-full object-cover"></canvas>
+    <!-- Upload Log / Status Window -->
+    <div class="w-full bg-black/80 border border-gray-800 rounded-xl p-3 text-xs font-mono text-gray-400 h-28 overflow-y-auto" id="upload-log">
+      <p class="text-gray-500">[SYSTEM] Sistem sedia. Sila masukkan maklumat GitHub di Tetapan.</p>
+    </div>
 
-                    <!-- No Camera Placeholder Overlay -->
-                    <div id="noCamNotice" class="absolute inset-0 bg-gray-900 flex flex-col items-center justify-center p-6 text-center z-20">
-                        <i class="fa-solid fa-video-slash text-4xl text-gray-600 mb-3"></i>
-                        <p class="text-sm font-mono text-gray-300 mb-2">Camera Feed Inactive or Blocked</p>
-                        <p id="camErrDetails" class="text-xs font-mono text-red-400 mb-4 max-w-xs hidden"></p>
-                        <button onclick="initWebcam()" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold rounded-lg text-xs font-mono transition">
-                            <i class="fa-solid fa-power-off mr-1"></i> START CAMERA
-                        </button>
-                    </div>
+  </main>
 
-                    <!-- Loading / Processing Spinner Overlay -->
-                    <div id="captureLoader" class="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center text-yellow-400 z-30 hidden">
-                        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-2"></i>
-                        <span class="font-mono text-xs tracking-wider uppercase" id="uploadStatusMsg">DEVELOPING & UPLOADING...</span>
-                    </div>
-                </div>
+  <!-- GitHub Settings Modal -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-sm w-full p-5 text-gray-200">
+      <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+        <h3 class="font-bold text-yellow-400 flex items-center gap-2">
+          <i class="fa-brands fa-github"></i> Tetapan GitHub Repositori
+        </h3>
+        <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
 
-                <!-- Bottom Filter Controls & Winder Grip -->
-                <div class="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-                    
-                    <!-- Filter Selector Wheel Buttons -->
-                    <div class="flex items-center space-x-1 overflow-x-auto py-1">
-                        <span class="text-xs font-mono text-yellow-300 font-bold mr-1">LOOK:</span>
-                        <button onclick="setFilter('warm')" class="filter-btn px-2.5 py-1 rounded bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/40 border border-yellow-500/30 text-xs font-mono active font-bold">90s Warm</button>
-                        <button onclick="setFilter('kodak')" class="filter-btn px-2.5 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 text-xs font-mono">Kodak Gold</button>
-                        <button onclick="setFilter('bw')" class="filter-btn px-2.5 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 text-xs font-mono">B&W Film</button>
-                        <button onclick="setFilter('leak')" class="filter-btn px-2.5 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 text-xs font-mono">Light Leak</button>
-                        <button onclick="setFilter('none')" class="filter-btn px-2.5 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 text-xs font-mono">Clean</button>
-                    </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block mb-1 text-gray-400">GitHub Personal Access Token (PAT)</label>
+          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+        </div>
+        <div>
+          <label class="block mb-1 text-gray-400">GitHub Username / Owner</label>
+          <input type="text" id="gh-owner" placeholder="Khairil-Anwar-Rustam" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+        </div>
+        <div>
+          <label class="block mb-1 text-gray-400">Repository Name</label>
+          <input type="text" id="gh-repo" placeholder="Snap-hub" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+        </div>
+        <div>
+          <label class="block mb-1 text-gray-400">Branch Name</label>
+          <input type="text" id="gh-branch" placeholder="main" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+        </div>
+      </div>
 
-                    <!-- Retro Manual Winder Wheel Graphic -->
-                    <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">
-                        <span class="text-[10px] font-mono text-gray-400">WIND</span>
-                        <div class="w-6 h-6 rounded-full grip-texture border border-gray-600 animate-spin-slow"></div>
-                    </div>
-                </div>
+      <div class="mt-5 flex gap-2">
+        <button onclick="saveSettings()" class="flex-1 bg-yellow-500 text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Simpan Tetapan</button>
+      </div>
+    </div>
+  </div>
 
-            </div>
+  <script>
+    let currentStream = null;
+    let facingMode = 'user'; // 'user' atau 'environment'
+    let flashEnabled = false;
+    let selectedFilter = 'none';
+    let shotCount = 0;
 
-            <!-- VOICE MEMO RECORDER COMPONENT -->
-            <div class="w-full max-w-lg mt-6 bg-gray-900 rounded-2xl p-5 border border-gray-800 shadow-xl">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                        <h2 class="font-bold text-sm text-gray-200 uppercase tracking-wider font-mono">Audio Tape Memo</h2>
-                    </div>
-                    <span id="audioTimer" class="font-lcd text-xl text-yellow-400 tracking-widest bg-black px-2 py-0.5 rounded border border-gray-800">00:00</span>
-                </div>
+    // Audio Recorder variables
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob = null;
+    let recordTimerInterval;
+    let secondsRecorded = 0;
 
-                <!-- Audio Visualizer / Status Bar -->
-                <div class="bg-gray-950 h-14 rounded-xl border border-gray-800 flex items-center justify-center px-4 relative overflow-hidden mb-4">
-                    <div id="audioWaveform" class="flex items-end justify-center space-x-1 h-8 w-full opacity-60">
-                        <div class="w-1.5 bg-yellow-400 h-2 rounded-full transition-all duration-100"></div>
-                        <div class="w-1.5 bg-yellow-400 h-4 rounded-full transition-all duration-100"></div>
-                        <div class="w-1.5 bg-yellow-400 h-1 rounded-full transition-all duration-100"></div>
-                        <div class="w-1.5 bg-yellow-400 h-6 rounded-full transition-all duration-100"></div>
-                        <div class="w-1.5 bg-yellow-400 h-3 rounded-full transition-all duration-100"></div>
-                        <div class="w-1.5 bg-yellow-400 h-5 rounded-full transition-all duration-100"></div>
-                    </div>
-                    <p id="audioStatusText" class="absolute text-xs font-mono text-gray-400 pointer-events-none">Ready to Record Voice Memo</p>
-                </div>
+    // Load Settings on Start
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+      initCamera();
+    });
 
-                <!-- Audio Controls & Preview Playback -->
-                <div class="flex items-center justify-between gap-3">
-                    <button id="recordAudioBtn" onclick="toggleAudioRecording()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl font-mono text-xs flex items-center justify-center space-x-2 transition shadow-lg">
-                        <i id="recordIcon" class="fa-solid fa-microphone"></i>
-                        <span id="recordLabel">RECORD VOICE MEMO</span>
-                    </button>
+    function logMessage(msg, type = 'info') {
+      const logContainer = document.getElementById('upload-log');
+      const p = document.createElement('p');
+      const time = new Date().toLocaleTimeString();
+      p.className = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-gray-400';
+      p.innerText = `[${time}] ${msg}`;
+      logContainer.appendChild(p);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
 
-                    <!-- Preview Player Container -->
-                    <div id="audioPreviewContainer" class="hidden flex-1 flex items-center space-x-2">
-                        <audio id="audioPreview" controls class="w-full h-9 rounded-lg bg-gray-800"></audio>
-                        <button onclick="uploadRecordedAudio()" id="uploadAudioBtn" class="px-3 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs font-mono rounded-lg transition" title="Upload Audio to GitHub">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    // Camera Management
+    async function initCamera() {
+      const video = document.getElementById('webcam');
+      const errorDiv = document.getElementById('camera-error');
+      errorDiv.classList.add('hidden');
 
-        </section>
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
 
-        <!-- RIGHT/BOTTOM SECTION: Session Gallery & GitHub Log (5 Cols) -->
-        <section class="lg:col-span-5 w-full">
-            <div class="bg-gray-900 rounded-2xl border border-gray-800 p-5 shadow-xl flex flex-col h-[640px]">
-                
-                <div class="flex items-center justify-between pb-4 border-b border-gray-800">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-brands fa-github text-xl text-gray-300"></i>
-                        <h2 class="font-bold text-base text-gray-200">GitHub Session Feed</h2>
-                    </div>
-                    <span id="uploadCountBadge" class="px-2 py-0.5 text-xs font-mono bg-gray-800 text-gray-400 rounded-full border border-gray-700">0 items</span>
-                </div>
+      const constraintsList = [
+        { video: { facingMode: { exact: facingMode }, width: { ideal: 1280 }, height: { ideal: 960 } } },
+        { video: { facingMode: facingMode } },
+        { video: true }
+      ];
 
-                <!-- Active Repository Target Info -->
-                <div class="my-3 p-3 bg-gray-950 rounded-xl border border-gray-800 text-xs font-mono text-gray-400 flex items-center justify-between">
-                    <div class="truncate">
-                        <span class="text-gray-400">Target:</span> 
-                        <span id="targetRepoDisplay" class="text-yellow-400 font-bold">Not Configured</span>
-                    </div>
-                    <button onclick="openSettingsModal()" class="text-gray-400 hover:text-white underline text-[11px]">Edit</button>
-                </div>
+      for (let constraint of constraintsList) {
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia(constraint);
+          video.srcObject = currentStream;
+          
+          // Mirror view logic
+          if (facingMode === 'user') {
+            video.style.transform = 'scaleX(-1)';
+          } else {
+            video.style.transform = 'scaleX(1)';
+          }
+          logMessage(`Kamera diaktifkan (${facingMode})`);
+          return;
+        } catch (err) {
+          console.warn("Cuba tetapan kamera seterusnya...", err);
+        }
+      }
 
-                <!-- Feed Items List -->
-                <div id="galleryFeed" class="flex-grow overflow-y-auto space-y-3 pr-1 py-1">
-                    
-                    <!-- Empty State Placeholder -->
-                    <div id="emptyGallery" class="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                        <i class="fa-solid fa-photo-film text-4xl mb-2 text-gray-700"></i>
-                        <p class="text-sm font-mono font-medium">No uploads yet in this session</p>
-                        <p class="text-xs text-gray-400 mt-1">Snap a retro photo or record a voice note to sync with GitHub.</p>
-                    </div>
+      document.getElementById('camera-error-msg').innerText = "Kamera tidak dapat dibuka. Sila semak kebenaran browser.";
+      errorDiv.classList.remove('hidden');
+    }
 
-                </div>
+    function switchCamera() {
+      facingMode = (facingMode === 'user') ? 'environment' : 'user';
+      initCamera();
+    }
 
-                <!-- Clear Session Button -->
-                <div class="pt-3 border-t border-gray-800 mt-auto flex justify-between items-center text-xs font-mono text-gray-400">
-                    <span class="text-[11px]">Auto-saves directly to repo</span>
-                    <button onclick="clearSessionLog()" class="hover:text-red-400 transition">Clear Log</button>
-                </div>
+    function toggleFlashSetting() {
+      flashEnabled = !flashEnabled;
+      const icon = document.getElementById('flash-icon');
+      icon.className = flashEnabled ? 'fa-solid fa-bolt text-yellow-400' : 'fa-solid fa-bolt-slash text-gray-400';
+      logMessage(`Flash: ${flashEnabled ? 'ON' : 'OFF'}`);
+    }
 
-            </div>
-        </section>
+    function setFilter(filter) {
+      selectedFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('border-yellow-400', 'bg-yellow-500/20');
+        if (btn.dataset.filter === filter) {
+          btn.classList.add('border-yellow-400', 'bg-yellow-500/20');
+        }
+      });
+    }
 
-    </main>
+    // Capture Photo
+    function takePicture() {
+      const video = document.getElementById('webcam');
+      const canvas = document.getElementById('photo-canvas');
+      const context = canvas.getContext('2d');
 
-    <!-- Footer -->
-    <footer class="border-t border-gray-900 bg-gray-950 py-4 text-center text-xs font-mono text-gray-400">
-        <p>Retro 35mm Disposable Camera API Sync &bull; Standard Web Cam & MediaRecorder</p>
-    </footer>
+      if (!video.srcObject) return;
 
-    <!-- GITHUB SETTINGS MODAL -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            
-            <div class="flex items-center justify-between mb-5 border-b border-gray-800 pb-3">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-brands fa-github text-2xl text-yellow-400"></i>
-                    <h3 class="font-bold text-lg text-white">GitHub Integration Config</h3>
-                </div>
-                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white text-xl">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+      // Visual Flash Effect
+      if (flashEnabled) {
+        const flash = document.getElementById('flash-layer');
+        flash.classList.add('flash-effect');
+        setTimeout(() => flash.classList.remove('flash-effect'), 400);
+      }
 
-            <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-4 text-xs font-mono">
-                <div>
-                    <label class="block text-gray-300 
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+
+      // Draw image
+      context.save();
+      if (facingMode === 'user') {
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
+      }
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      context.restore();
+
+      // Apply Filters
+      applyCanvasFilter(context, canvas.width, canvas.height, selectedFilter);
+
+      // Increment Counter
+      shotCount++;
+      document.getElementById('shot-counter').innerText = String(shotCount).padStart(2, '0');
+
+      // Convert to Base64 & Upload
+      const imageDataBase64 = canvas.toDataURL('image/png').split(',')[1];
+      const filename = `photos/PHOTO_${getTimestamp()}.png`;
+
+      uploadToGitHub(filename, imageDataBase64, `Upload Gambar Retro #${shotCount}`);
+    }
+
+    function applyCanvasFilter(ctx, width, height, filter) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i], g = data[i+1], b = data[i+2];
+
+        if (filter === 'bw') {
+          let avg = (r + g + b) / 3;
+          data[i] = avg; data[i+1] = avg; data[i+2] = avg;
+        } else if (filter === 'warm') {
+          data[i] = Math.min(255, r * 1.15);
+          data[i+1] = Math.min(255, g * 1.05);
+          data[i+2] = Math.max(0, b * 0.9);
+        } else if (filter === 'vintage') {
+          data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+          data[i+1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+          data[i+2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Audio Recording
+    async function toggleRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const player = document.getElementById('audio-player');
+          player.src = audioUrl;
+          document.getElementById('audio-preview-container').classList.remove('hidden');
+        };
+
+        mediaRecorder.start();
+        secondsRecorded = 0;
+        document.getElementById('record-label').innerText = "Berhenti Merakam";
+        document.getElementById('record-icon').className = "fa-solid fa-square text-xs text-red-500 animate-pulse";
+        
+        recordTimerInterval = setInterval(() => {
+          secondsRecorded++;
+          const mins = String(Math.floor(secondsRecorded / 60)).padStart(2, '0');
+          const secs = String(secondsRecorded % 60).padStart(2, '0');
+          document.getElementById('record-timer').innerText = `${mins}:${secs}`;
+        }, 1000);
+
+        logMessage("Merakam suara...");
+      } catch (err) {
+        logMessage("Akses mikrofon ditolak!", "error");
+      }
+    }
+
+    function stopRecording() {
+      mediaRecorder.stop();
+      clearInterval(recordTimerInterval);
+      document.getElementById('record-label').innerText = "Rakram Suara";
+      document.getElementById('record-icon').className = "fa-solid fa-circle text-xs text-red-500";
+      logMessage("Merakam selesai. Sedia untuk dihantar.");
+    }
+
+    function uploadVoiceNote() {
+      if (!audioBlob) return;
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = () => {
+        const base64Audio = reader.result.split(',')[1];
+        const filename = `voice-notes/VOICE_${getTimestamp()}.webm`;
+        uploadToGitHub(filename, base64Audio, "Upload Voice Note");
+      };
+    }
+
+    // GitHub API Core Function
+    async function uploadToGitHub(path, base64Content, commitMsg) {
+      const token = localStorage.getItem('gh_token');
+      const owner = localStorage.getItem('gh_owner');
+      const repo = localStorage.getItem('gh_repo');
+      const branch = localStorage.getItem('gh_branch') || 'main';
+
+      if (!token || !owner || !repo) {
+        logMessage("RALAT: Tetapan GitHub belum lengkap!", "error");
+        toggleSettingsModal();
+        return;
+      }
+
+      logMessage(`Memuat naik ke GitHub: ${path}...`);
+
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github+json'
+          },
+          body: JSON.stringify({
+            message: commitMsg,
+            content: base64Content,
+            branch: branch
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          logMessage(`BERJAYA! Fail disimpan: ${path}`, "success");
+        } else {
+          logMessage(`RALAT GITHUB: ${data.message}`, "error");
+        }
+      } catch (err) {
+        logMessage(`RALAT RANGKAIAN: ${err.message}`, "error");
+      }
+    }
+
+    // Helpers & Settings
+    function toggleSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    function saveSettings() {
+      localStorage.setItem('gh_token', document.getElementById('gh-token').value.trim());
+      localStorage.setItem('gh_owner', document.getElementById('gh-owner').value.trim());
+      localStorage.setItem('gh_repo', document.getElementById('gh-repo').value.trim());
+      localStorage.setItem('gh_branch', document.getElementById('gh-branch').value.trim() || 'main');
+      
+      logMessage("Tetapan GitHub disimpan.", "success");
+      toggleSettingsModal();
+    }
+
+    function loadSettings() {
+      if (localStorage.getItem('gh_token')) document.getElementById('gh-token').value = localStorage.getItem('gh_token');
+      if (localStorage.getItem('gh_owner')) document.getElementById('gh-owner').value = localStorage.getItem('gh_owner');
+      if (localStorage.getItem('gh_repo')) document.getElementById('gh-repo').value = localStorage.getItem('gh_repo');
+      if (localStorage.getItem('gh_branch')) document.getElementById('gh-branch').value = localStorage.getItem('gh_branch');
+    }
+
+    function getTimestamp() {
+      const now = new Date();
+      r
