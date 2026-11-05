@@ -40,7 +40,7 @@
       <i class="fa-solid font-retro text-2xl text-yellow-500 fa-camera-retro"></i>
       <h1 class="text-xl font-bold tracking-widest text-yellow-400 font-retro">SNAP-HUB v1.0</h1>
     </div>
-    <button id="open-settings-btn" onclick="openSettingsModal()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs shadow-lg transition cursor-pointer">
+    <button onclick="openSettingsModal()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs shadow-lg transition cursor-pointer">
       <i class="fa-solid fa-gear"></i> Tetapan GitHub
     </button>
   </header>
@@ -57,10 +57,10 @@
         </div>
         
         <div class="flex gap-2">
-          <button id="switch-camera-btn" onclick="switchCamera()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
+          <button onclick="switchCamera()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
-          <button id="toggle-flash-btn" onclick="toggleFlashSetting()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
+          <button onclick="toggleFlashSetting()" class="bg-gray-800 text-yellow-400 p-2 rounded-full border border-gray-600 hover:bg-gray-700 transition cursor-pointer">
             <i id="flash-icon" class="fa-solid fa-bolt-slash"></i>
           </button>
         </div>
@@ -126,7 +126,7 @@
 
     <!-- Kotak Log Muat Naik -->
     <div class="w-full bg-black/80 border border-gray-800 rounded-xl p-3 text-xs font-mono text-gray-400 h-28 overflow-y-auto" id="upload-log">
-      <p class="text-green-400">[SYSTEM] Token GitHub berjaya dimuatkan secara automatik. Sedia digunakan!</p>
+      <p class="text-gray-400">[SYSTEM] Sedia. Sila buka Tetapan GitHub untuk memasukkan Token baru anda.</p>
     </div>
 
   </main>
@@ -144,19 +144,19 @@
       <div class="space-y-3 text-xs">
         <div>
           <label class="block mb-1 text-gray-300 font-bold">1. GitHub Personal Access Token (PAT)</label>
-          <input type="password" id="gh-token" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="password" id="gh-token" placeholder="ghp_..." class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">2. GitHub Username</label>
-          <input type="text" id="gh-owner" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-owner" placeholder="Khairil-Anwar-Rustam" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">3. Repository Name</label>
-          <input type="text" id="gh-repo" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-repo" placeholder="Snap-hub" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
         <div>
           <label class="block mb-1 text-gray-300 font-bold">4. Branch Name</label>
-          <input type="text" id="gh-branch" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
+          <input type="text" id="gh-branch" placeholder="main" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-yellow-500">
         </div>
       </div>
 
@@ -183,17 +183,14 @@
     let recordTimerInterval;
     let secondsRecorded = 0;
 
-    // Default Configuration with your Token hardcoded
-    const DEFAULT_CONFIG = {
-      token: "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",
-      owner: "Khairil-Anwar-Rustam",
-      repo: "Snap-hub",
-      branch: "main"
-    };
-
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
       initCamera();
+      
+      // Jika token belum diset, buka modal tetapan automatik
+      if (!localStorage.getItem('gh_token')) {
+        openSettingsModal();
+      }
     });
 
     function logMessage(msg, type = 'info') {
@@ -207,14 +204,12 @@
     }
 
     function openSettingsModal() {
-      const modal = document.getElementById('settings-modal');
-      modal.classList.remove('hidden');
+      document.getElementById('settings-modal').classList.remove('hidden');
       loadSettings();
     }
 
     function closeSettingsModal() {
-      const modal = document.getElementById('settings-modal');
-      modal.classList.add('hidden');
+      document.getElementById('settings-modal').classList.add('hidden');
     }
 
     function saveSettings() {
@@ -238,7 +233,7 @@
       localStorage.setItem('gh_branch', branch);
 
       alertDiv.className = "mt-3 text-xs text-green-400 bg-green-950/60 p-2 rounded border border-green-800";
-      alertDiv.innerText = "Tetapan berjaya disimpan!";
+      alertDiv.innerText = "Tetapan berjaya disimpan secara selamat!";
       alertDiv.classList.remove('hidden');
 
       logMessage("Tetapan GitHub dikemaskini.", "success");
@@ -250,16 +245,10 @@
     }
 
     function loadSettings() {
-      // Load from localStorage or fallback to DEFAULT_CONFIG
-      const token = localStorage.getItem('gh_token') || DEFAULT_CONFIG.token;
-      const owner = localStorage.getItem('gh_owner') || DEFAULT_CONFIG.owner;
-      const repo = localStorage.getItem('gh_repo') || DEFAULT_CONFIG.repo;
-      const branch = localStorage.getItem('gh_branch') || DEFAULT_CONFIG.branch;
-
-      document.getElementById('gh-token').value = token;
-      document.getElementById('gh-owner').value = owner;
-      document.getElementById('gh-repo').value = repo;
-      document.getElementById('gh-branch').value = branch;
+      document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
+      document.getElementById('gh-owner').value = localStorage.getItem('gh_owner') || 'Khairil-Anwar-Rustam';
+      document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || 'Snap-hub';
+      document.getElementById('gh-branch').value = localStorage.getItem('gh_branch') || 'main';
     }
 
     async function initCamera() {
@@ -434,10 +423,16 @@
     }
 
     async function uploadToGitHub(path, base64Content, commitMsg) {
-      const token = localStorage.getItem('gh_token') || DEFAULT_CONFIG.token;
-      const owner = localStorage.getItem('gh_owner') || DEFAULT_CONFIG.owner;
-      const repo = localStorage.getItem('gh_repo') || DEFAULT_CONFIG.repo;
-      const branch = localStorage.getItem('gh_branch') || DEFAULT_CONFIG.branch;
+      const token = localStorage.getItem('gh_token');
+      const owner = localStorage.getItem('gh_owner');
+      const repo = localStorage.getItem('gh_repo');
+      const branch = localStorage.getItem('gh_branch') || 'main';
+
+      if (!token || !owner || !repo) {
+        logMessage("RALAT: Sila masukkan Token di Tetapan GitHub dahulu!", "error");
+        openSettingsModal();
+        return;
+      }
 
       logMessage(`Memuat naik: ${path}...`);
       const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
@@ -448,4 +443,13 @@
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github+json
+            'Accept': 'application/vnd.github+json'
+          },
+          body: JSON.stringify({
+            message: commitMsg,
+            content: base64Content,
+            branch: branch
+          })
+        });
+
+        const data = await response.j
